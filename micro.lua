@@ -21,7 +21,6 @@ micro.id = 0
 micro.images = {}
 micro.locked = false --this is reserved for when a window is locked and requires action first.
 micro.lockedid = {} --store the locked ID
-
 --Load Micro
 function micro:load()
 	micro.keys = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4","5","6","7","8","9","0",".","-"}
@@ -30,9 +29,6 @@ function micro:load()
 		micro.font[i] = love.graphics.newFont("/fonts/zekton.ttf", i)
 	end
 end
---
-
---Main micro function
 function micro:new(id) --Begin the state, this will hold components
 	assert(type(id) == "string", "Please enter a string")
 	local state = {id = id}
@@ -56,9 +52,6 @@ function micro:new(id) --Begin the state, this will hold components
 	self.states[state.id] = state
 	return state
 end
---
-
---Set state
 function micro:deactive(id)
 	assert(type(id) == "string", "Please enter a string")
 	self.states[id].active = false
@@ -78,11 +71,8 @@ function micro:delete(id)
 	end
 	self.states[id] = nil
 end
---
-
---mouse pressed, set the items to true
 function micro:mousePressed()
-	local x, y = micro.camera:mousePosition()
+	local x, y = love.mouse.getPosition()
 	for _, state in pairs(self.states) do
 		if not self.locked or self.lockid == state.id then
 			if state.active then
@@ -102,13 +92,8 @@ function micro:mousePressed()
 		end
 	end
 end
-
-
---
-
---mouse released for actually clicking
 function micro:mouseReleased()
-	local x, y = micro.camera:mousePosition()
+	local x, y = love.mouse.getPosition()
 	for _, state in pairs(self.states) do
 		if not self.locked or self.lockid == state.id then
 			if state.active then
@@ -128,9 +113,6 @@ function micro:mouseReleased()
 		end
 	end
 end
---
-
---
 function micro:wheelMoved(x,y)
 	for _, state in pairs(self.states) do
 		if not self.locked or self.lockid == state.id then
@@ -152,9 +134,6 @@ function micro:wheelMoved(x,y)
 		end
 	end
 end
---
-
---key inputs
 function micro:keyPressed(key)
 	for _, state in pairs(self.states) do
 		if not self.locked or self.lockid == state.id then
@@ -163,7 +142,7 @@ function micro:keyPressed(key)
 					if v.class == "input" and v.selected then
 						if key == "backspace" then
 							v.output = string.sub(v.output, 1, -2)
-						elseif key == "space" then
+						elseif key == " " then
 							v.output = v.output.." "
 						else
 							if love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift") then
@@ -190,8 +169,6 @@ function micro:keyPressed(key)
 		end
 	end
 end
---
-
 function micro:isDown(key)
 	for _, state in pairs(self.states) do
 		if not self.locked or self.lockid == state.id then
@@ -213,10 +190,6 @@ function micro:isDown(key)
 		end
 	end	
 end
-
-
-
---
 function micro:includedkey(keycheck)
 	for _,v in pairs(self.keys) do
 		if keycheck == v then
@@ -225,13 +198,9 @@ function micro:includedkey(keycheck)
 	end
 	return false
 end
---
-
---clone this into multiple things, button, checkbox, etc
 function micro:draw()
 	for _,state in pairs(self.states) do
 		if state.visible then
-			micro.camera:set()
 			for _,v in pairs(state.components) do
 				if v.class == "image" then
 					love.graphics.setColor(v.color)
@@ -258,7 +227,6 @@ function micro:draw()
 					self:printblock(v.fontsize, v.output, v.fontcolor, state.x + v.x , state.y + v.y, v.fontalign)
 				end
 			end
-			micro.camera:unset()
 			if state.border then
 				love.graphics.setColor(255,255,255,255)
 				love.graphics.rectangle("line", state.x, state.y, state.width, state.height)
@@ -266,36 +234,7 @@ function micro:draw()
 		end
 	end
 end
---
-micro.camera = {}
-micro.camera.x, micro.camera.y = 0, 0
 
-function micro.camera:set()
-	love.graphics.push()
-	love.graphics.translate(-self.x, -self.y)
-end
---
-
---
-function micro.camera:unset()
-	love.graphics.pop()
-	love.graphics.scale(1,1)
-end
---
-
---
-function micro.camera:reset()
-	self.x, self.y = 0, 0
-end
---
-
---
-function micro.camera:mousePosition()
-	return love.mouse.getX() + self.x, love.mouse.getY() + self.y
-end
---
-
---
 function micro:newImage(image)
 	if micro.images[image] then
 		print("Image Reused")
@@ -304,9 +243,12 @@ function micro:newImage(image)
 		print("Image Loaded")
 	end
 end
---
+function micro:newFont(pathtofont,fontname)
+	for i = 4, 50 do 
+		micro.font[i] = love.graphics.newFont(pathtofont, i)
+	end
+end
 
---Scroll Flag
 function micro:scroll()
 	return {
 		id = 0, 
@@ -314,9 +256,6 @@ function micro:scroll()
 		height = 600
 	}	
 end
---
-
---New Frame
 function micro:frame()
 	return {
 		id = 0, 
@@ -330,9 +269,6 @@ function micro:frame()
 		header = false
 	}
 end
---
-
---New Button
 function micro:button()
 	return {
 		id = 0, 
@@ -351,9 +287,6 @@ function micro:button()
 		action = function() print("Button Clicked") end,
 		}
 end
---
-
---
 function micro:checkbox()
 	return {
 		id = 0,
@@ -365,9 +298,6 @@ function micro:checkbox()
 		checked = false,
 	}
 end
---
-
---Image
 function micro:image()
 	return {
 		id = 0,
@@ -378,9 +308,6 @@ function micro:image()
 		color = {255,255,255,255}
 	}
 end
---
-
---Text
 function micro:text()
 	return {
 		id = 0,
@@ -393,9 +320,6 @@ function micro:text()
 		fontalign = "c"
 	}
 end
---
-
---Text
 function micro:textblock()
 	return {
 		id = 0,
@@ -407,9 +331,6 @@ function micro:textblock()
 		fontcolor = {255,255,255,255}, 
 	}
 end
---
-
---
 function micro:outline()
 	return {
 		id = 0,
@@ -422,9 +343,6 @@ function micro:outline()
 		color = {255,255,255,255},
 	}
 end
---
-
---
 function micro:slider()
 	return {
 		id = 0,
@@ -440,9 +358,6 @@ function micro:slider()
 		color = {122,122,122,255},	
 	}
 end
---
-
---Input Box
 function micro:input() --completed, now to implement into the slate functions to pass the args
 	return {
 		id = 0,
@@ -461,16 +376,11 @@ function micro:input() --completed, now to implement into the slate functions to
 		selected = false,
 	}
 end
---
 
---
 function micro:commaFormat(n) --Complete
   return tostring(math.floor(n)):reverse():gsub("(%d%d%d)","%1,")
                                 :gsub(",(%-?)$","%1"):reverse()
 end
---
-
---
 function micro:print(size, text, color, x,  y, align) --X - C(enter) R(ight), Y - B(ottom) C(enter)
 	local align = align or {}
 	local offsetx = 0
@@ -487,9 +397,6 @@ function micro:print(size, text, color, x,  y, align) --X - C(enter) R(ight), Y 
 	love.graphics.setFont(self.font[size])
 	love.graphics.print(text, x - offsetx, y - offsety)
 end
---
-
---
 function micro:printblock(size, text, color, x,  y, align) --X - C(enter) R(ight), Y - B(ottom) C(enter)
 	local f = {}
 	local a = ""
@@ -503,9 +410,6 @@ function micro:printblock(size, text, color, x,  y, align) --X - C(enter) R(ight
 	love.graphics.setFont(self.font[size])
 	love.graphics.printf(text, x, y, blockwidth, a)
 end
---
-
---
 function micro:getBlockHeight(text, size, maxwidth)
 	local w = self.font[size]:getWidth(text)
 	local h = math.floor(w/maxwidth) --return the number of lines

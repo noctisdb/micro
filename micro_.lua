@@ -14,29 +14,20 @@ License MIT
 --]]
 
 return {
-
-    new = function(tbl)
+    new = function()
         local micro = {
-            states = {},
-            state = {},
-            id = 0,
-            images = {},
-            locked = false, --this is reserved for when a window is locked and requires action first.
-            lockid = {}, --store the locked ID
-            width = love.graphics.getWidth(),
-            height = love.graphics.getHeight(),
+            states = {}, state = {}, id = 0, images = {}, locked = false, lockedid = {},
+            micro.width = love.graphics.getWidth(),
+            micro.height = love.graphics.getHeight()
         }
         function micro:load()
             self.keys = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4","5","6","7","8","9","0",".","-"}
             self.font = {}
-            --DEFAULTFONT = love.graphics.newFont("fonts/PixelOperatorMono-Bold.ttf", 16)
-            --DEFAULTFONTRegular = love.graphics.newFont("fonts/PixelOperatorMono.ttf", 16)
         	for i = 4, 50 do 
-        		self.font[i] = love.graphics.newFont("/fonts/PixelOperatorMono-Bold.ttf", i)
+        		self.font[i] = love.graphics.newFont("/fonts/zekton.ttf", i)
         	end
-            print("Micro Loaded")
         end
-        function micro:new(id) --Create a new State
+        function micro:newState(id)
         	assert(type(id) == "string", "Please enter a string")
         	local state = {id = id}
         	state.components = {}
@@ -44,189 +35,38 @@ return {
         	state.active = true --can interact with it
         	state.x = 0
         	state.y = 0
-        	state.width = self.width
-        	state.height = self.height
+        	state.width = 400
+        	state.height = 150
         	state.border = true --set to false for no border
-            function state:scroll(tbl)
-                micro.id = micro.id + 1
-            	local scroll = {
-            		id = micro.id, 
-            		class = "scroll", 
-            		height = tbl.height or 600
-            	}
-                self.components[scroll.id] = scroll
-                return scroll
-            end
-            function state:input(tbl)
-            	micro.id = micro.id + 1
-                local input = { 
-            		id = micro.id,
-            		class = "input",
-            		x = tbl.x or 0,
-            		y = tbl.y or 0,
-            		width = tbl.width or 150,
-            		height = tbl.height or 25,
-            		output = tbl.output or "",
-            		maxchars = tbl.maxchars or 0,
-            		color = tbl.color or {100,100,100,255},
-            		fontalign = tbl.fontalign or "c",
-            		fontsize = tbl.fontsize or 20,
-            		fontcolor = tbl.fontcolor or {255,255,255,255},
-            		pressed = false,
-            		selected = false,
-            	}
-                self.components[input.id] = input
-                return input
-            end
-
-            function state:frame()
-                micro.id = micro.id + 1
-            	local frame = {
-            		id = micro.id, 
-            		class = "frame", 
-            		x = 0, 
-            		y = 0, 
-            		color = {10,10,10,255},
-            		width = 400, 
-            		height = 600, 
-            		title = "Title", 
-            		header = false
-            	}
-                self.components[frame.id] = frame
-                return frame
-            end
-            function state:button(tbl)
-                micro.id = micro.id + 1
-            	local button = {
-            		id = tbl.alias or micro.id, 
-            		class = "button", 
-            		x = tbl.x or 0, 
-            		y = tbl.y or 0, 
-            		width = tbl.width or 100, 
-            		height = tbl.height or 20, 
-            		color = tbl.color or {55,55,55,255},
-            		output = tbl.output or "Click Me",
-            		fontsize = tbl.fontsize or 16,
-            		fontcolor = tbl.fonctolor or {255,255,255,255},
-            		fontalign = tbl.fontalign or "c",
-            		pressed = false,
-            		keylistener = tbl.keylistener or nil,
-            		action = tbl.action or function() print("Button Clicked") end,
-            		}
-                    if tbl.outline == true then
-                       self:outline {x = button.x, y = button.y, width = button.width, height = button.height, border = 1} 
-                    end
-                    self.components[button.id] = button
-                    return button
-            end
-            function state:checkbox()
-                micro.id = micro.id + 1
-            	local checkbox = {
-            		id = micro.id,
-            		class = "checkbox",
-            		x = 0,
-            		y = 0,
-            		width = 10,
-            		height = 10,
-            		checked = false,
-            	}
-                self.components[checkbox.id] = checkbox
-                return checkbox
-            end
-            function state:image()
-                micro.id = micro.id + 1
-            	local image = {
-            		id = micro.id,
-            		class = "image",
-            		x = 0, 
-            		y = 0, 
-            		name = {}, 
-            		color = {255,255,255,255}
-            	}
-                self.components[image.id] = image
-                return image
-            end
-            function state:text(tbl)
-                micro.id = micro.id + 1
-            	local text = {
-            		id = tbl.alias or micro.id,
-            		class = "text",
-            		x = tbl.x or 0, 
-            		y = tbl.y or 0, 
-            		output = tbl.output or "Text", 
-            		fontsize = tbl.fontsize or 16,
-            		fontcolor = tbl.fontcolor or {255,255,255,255}, 
-            		fontalign = tbl.fontalign or "c"
-            	}
-                self.components[text.id] = text
-                return text
-            end
-            function state:textblock()
-                micro.id = micro.id + 1
-            	local textblock = {
-            		id = micro.id,
-            		class = "textblock",
-            		x = 0, 
-            		y = 0, 
-            		output = "Text", 
-            		fontsize = 16,
-            		fontcolor = {255,255,255,255}, 
-            	}
-                self.components[textblock.id] = textblock
-                return textblock
-            end
-            function state:outline(tbl)
-                micro.id = micro.id + 1
-            	local outline = {
-            		id = micro.id,
-            		class = "outline",
-            		x = tbl.x or 0,
-            		y = tbl.y or 0,
-            		width = tbl.width or 400,
-            		height = tbl.height or 600,
-            		border = tbl.border or 2,
-            		color = tbl.color or {255,255,255,255},
-            	}
-                self.components[outline.id] = outline
-                return outline
-            end
-            function state:slider(tbl)
-                micro.id = micro.id + 1
-            	local slider = {
-            		id = micro.id,
-            		class = "slider",
-            		x = tbl.x or 0,
-            		y = tbl.y or 0,
-            		width = tbl.width or 25,
-            		height = tbl.height or 600,
-            		orientation = tbl.orientation or "horizontal",
-            		minvalue = tbl.minvalue or 0,
-            		maxvalue = tbl.maxvalue or 100,
-            		increment = tbl.increment or 10,
-            		color = tbl.color or {122,122,122,255},	
-            	}
-                self.components[slider.id] = slider
-                return slider
-            end
-
-
-            function state:deactivate()
-            	self.active = false
-            end
-            function state:activate()
-            	self.active = true
-            end
-
-            function state:show()
-            	self.visible = true        
-            end
-            function state:hide()
-            	self.visible = false       
-            end	
+        	function state:create(class, alias) --alias can be used to specify the ID 
+        		assert(type(class) == "string", "Enter a String")
+        		local component = micro[class]()
+        		micro.id = micro.id + 1
+        		component.id = alias or micro.id
+        		self.components[component.id] = component
+        		return component
+        	end
+	
         	self.states[state.id] = state
         	return state
         end
-
+        function micro:deactiveState(id)
+        	assert(type(id) == "string", "Please enter a string")
+        	self.states[id].active = false
+        	--micro.camera:reset()
+        end
+        function micro:activateState(id)
+        	assert(type(id) == "string", "Please enter a string")
+        	self.states[id].active = true
+        	--micro.camera:reset()
+        end
+        function micro:deleteState(id)
+        	assert(type(id) == "string", "Please enter a string")
+        	for _,v in pairs(self.states[id].components) do
+        		v = nil
+        	end
+        	self.states[id] = nil
+        end
         function micro:mousePressed()
         	local x, y = love.mouse.getPosition()
         	for _, state in pairs(self.states) do
@@ -236,7 +76,6 @@ return {
         					if v.class == "button" or v.class == "input" then
         						if x >= state.x + v.x and x <= state.x + v.x + v.width and y >= state.y + v.y and y <= state.y +  v.y + v.height then
         							v.pressed = true
-                                    print("found")
         						else
         							v.pressed = false
         							if v.class == "input" then
@@ -391,7 +230,7 @@ return {
         		end
         	end
         end
-        --Components
+
         function micro:newImage(image)
         	if micro.images[image] then
         		print("Image Reused")
@@ -405,7 +244,135 @@ return {
         		micro.font[i] = love.graphics.newFont(pathtofont, i)
         	end
         end
-        --Formatters
+
+        function micro:scroll()
+        	return {
+        		id = 0, 
+        		class = "scroll", 
+        		height = 600
+        	}	
+        end
+        function micro:frame()
+        	return {
+        		id = 0, 
+        		class = "frame", 
+        		x = 0, 
+        		y = 0, 
+        		color = {10,10,10,255},
+        		width = 400, 
+        		height = 600, 
+        		title = "Title", 
+        		header = false
+        	}
+        end
+        function micro:button()
+        	return {
+        		id = 0, 
+        		class = "button", 
+        		x = 0, 
+        		y = 0, 
+        		width = 100, 
+        		height = 28, 
+        		color = {55,55,55,255},
+        		output = "Click Me",
+        		fontsize = 20,
+        		fontcolor = {255,255,255,255},
+        		fontalign = "c",
+        		pressed = false,
+        		keylistener = nil,
+        		action = function() print("Button Clicked") end,
+        		}
+        end
+        function micro:checkbox()
+        	return {
+        		id = 0,
+        		class = "checkbox",
+        		x = 0,
+        		y = 0,
+        		width = 10,
+        		height = 10,
+        		checked = false,
+        	}
+        end
+        function micro:image()
+        	return {
+        		id = 0,
+        		class = "image",
+        		x = 0, 
+        		y = 0, 
+        		name = {}, 
+        		color = {255,255,255,255}
+        	}
+        end
+        function micro:text()
+        	return {
+        		id = 0,
+        		class = "text",
+        		x = 0, 
+        		y = 0, 
+        		output = "Text", 
+        		fontsize = 20,
+        		fontcolor = {255,255,255,255}, 
+        		fontalign = "c"
+        	}
+        end
+        function micro:textblock()
+        	return {
+        		id = 0,
+        		class = "textblock",
+        		x = 0, 
+        		y = 0, 
+        		output = "Text", 
+        		fontsize = 10,
+        		fontcolor = {255,255,255,255}, 
+        	}
+        end
+        function micro:outline()
+        	return {
+        		id = 0,
+        		class = "outline",
+        		x = 0,
+        		y = 0,
+        		width = 400,
+        		height = 600,
+        		border = 2,
+        		color = {255,255,255,255},
+        	}
+        end
+        function micro:slider()
+        	return {
+        		id = 0,
+        		class = "slider",
+        		x = 0,
+        		y = 0,
+        		width = 25,
+        		height = 600,
+        		orientation = "horizontal",
+        		minvalue = 0,
+        		maxvalue = 100,
+        		increment = 10,
+        		color = {122,122,122,255},	
+        	}
+        end
+        function micro:input() --completed, now to implement into the slate functions to pass the args
+        	return {
+        		id = 0,
+        		class = "input",
+        		x = 0,
+        		y = 0,
+        		width = 150,
+        		height = 25,
+        		output = "",
+        		maxchars = 0,
+        		color = {100,100,100,255},
+        		fontalign = "c",
+        		fontsize = 20,
+        		fontcolor = {255,255,255,255},
+        		pressed = false,
+        		selected = false,
+        	}
+        end
+
         function micro:commaFormat(n) --Complete
           return tostring(math.floor(n)):reverse():gsub("(%d%d%d)","%1,")
                                         :gsub(",(%-?)$","%1"):reverse()
@@ -444,7 +411,7 @@ return {
         	local h = math.floor(w/maxwidth) --return the number of lines
         	return h
         end
-        micro:load()
+
         return micro
     end
 }

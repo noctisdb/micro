@@ -10,42 +10,54 @@ function love.load()
     love.graphics.setDefaultImageFilter("nearest","nearest")
     love.keyboard.setKeyRepeat(.10, .10 )
 
-	micro:load()
+	--micro:load()
 
 	--test micro ui
-	local m = micro:new "test" --create the container, this is also the state for pseudo menus
-	m.border = true
-	local b = m:create "button"
-	b.action = function() micro:deactive("test") m.visible = false end --deactive makes it not interactable, visible, well if yous can sees it, dummy.
- 	local inp = m:create "input"
- 	inp.x = 50
- 	inp.y = 50
- 	inp.maxchars = 50
+	ui = micro.new() --Initialize Micro
+    --Start creating containers and things
+	--Main Container
+    menu = ui:new "main"
+    
+    --Add test button
+    local button = menu:button {x = 500, y = 20, outline = true, alias = "regbutton"}
+	button.action = function() menu:hide() menu:deactivate() ui.states["menu2"]:show() ui.states["menu2"]:activate() end --deactive makes it not interactable, visible, well if yous can sees it, dummy.
+    
+    --Add test input
+ 	local input = menu:input {x = 500, y = 80, maxchars = 20}
+    
+    --Textbloack
+    local t = menu:text {output = "Howdy",x = 500, y = 150}
+    
+    local menu2 = ui:new "menu2"
+    menu2:hide()
+    menu2:deactivate()
+    local button2 = menu2:button {x = 20, y = 20}
+
 end
 
 function love.mousepressed()
-	micro:mousePressed()
+	ui:mousePressed()
 end
 
 function love.mousereleased()
-	micro:mouseReleased()
+	ui:mouseReleased()
 end
 
 function love.wheelmoved()
-	micro:wheelMoved(x,y)
+    ui:wheelMoved(x,y)
 end
 
 function love.keypressed(key, isrepeat)
-	micro:keyPressed(key)
+	ui:keyPressed(key)
 end
 
 function love.update(dt)
-    --display:update(dt)
+
 end
 
 function love.draw()
     --camera:set()
     --display:draw()
     --camera:unset()
-    micro:draw()
+    ui:draw()
 end
